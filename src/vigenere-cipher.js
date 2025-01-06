@@ -20,13 +20,47 @@ const { NotImplementedError } = require('../extensions/index.js');
  * 
  */
 class VigenereCipheringMachine {
-  encrypt() {
-    throw new NotImplementedError('Not implemented');
-    // remove line with error and write your code here
+  constructor(isDirect = true) {
+    this.isDirect = isDirect;
+    this.alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
   }
-  decrypt() {
-    throw new NotImplementedError('Not implemented');
-    // remove line with error and write your code here
+
+  checkArguments(...args) {
+    if (args.some(arg => typeof arg !== 'string') || args.some(arg => !arg.trim())) {
+      throw new Error('Incorrect arguments!');
+    }
+  }
+
+  processMessage(message, key, mode) {
+    let result = '';
+    let keyIndex = 0;
+
+    for (let i = 0; i < message.length; i++) {
+      const char = message[i].toUpperCase();
+      if (this.alphabet.includes(char)) {
+        const keyChar = key[keyIndex % key.length].toUpperCase();
+        const keyCharCode = this.alphabet.indexOf(keyChar);
+        const shift = mode === 'encrypt' ? keyCharCode : -keyCharCode;
+        const charIndex = this.alphabet.indexOf(char);
+        const newIndex = (charIndex + shift + this.alphabet.length) % this.alphabet.length;
+        result += this.alphabet[newIndex];
+        keyIndex++;
+      } else {
+        result += message[i];
+      }
+    }
+
+    return this.isDirect ? result : result.split('').reverse().join('');
+  }
+
+  encrypt(message, key) {
+    this.checkArguments(message, key);
+    return this.processMessage(message, key, 'encrypt');
+  }
+
+  decrypt(encryptedMessage, key) {
+    this.checkArguments(encryptedMessage, key);
+    return this.processMessage(encryptedMessage, key, 'decrypt');
   }
 }
 
